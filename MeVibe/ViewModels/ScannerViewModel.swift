@@ -11,6 +11,8 @@ import Combine
 class ScannerViewModel: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     @Published var lastDetectedObject: String = "Scanning..."
     @Published var session = AVCaptureSession()
+    @Published var foundValuableObject: ValuableObject? = nil
+    @Published var isScanning: Bool = true
     
     private let visionService = VisionService()
     private let videoOutput = AVCaptureVideoDataOutput()
@@ -38,13 +40,27 @@ class ScannerViewModel: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
     }
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard isScanning else { return }
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         
         visionService.classify(imageBuffer: pixelBuffer) { [weak self] label in
+            guard let label = label else { return }
+            
             DispatchQueue.main.async {
-                self?.lastDetectedObject = label ?? "Nothing found"
+                self?.lastDetectedObject = label
+                
+                if let match = ObjectDatabase.findMatch(for: label) {
+                    self?.foundValuableObject = match
+                    self?.isScanning = false
+                }
             }
         }
+    }
+    
+    func resetScan() {
+        foundValuableObject = nil
+        isScanning = true
+        lastDetectedObject = "Scanning..."
     }
 }
 
