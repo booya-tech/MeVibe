@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct MeVibeApp: App {
@@ -13,5 +14,9 @@ struct MeVibeApp: App {
         WindowGroup {
             ScannerView()
         }
+        .modelContainer(for: [
+            User.self,
+            ScanRecord.self
+        ])
     }
 }

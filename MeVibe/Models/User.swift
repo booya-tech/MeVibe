@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 class User {
-    var totalPoints: Int?
+    var totalPoints: Int
     var createdAt: Date
     
     // Relationship: One user has many scan records
