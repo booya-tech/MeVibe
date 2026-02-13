@@ -1,0 +1,19 @@
+//
+//  AppStrings.swift
+//  MeVibe
+//
+//  Created by Panachai Sulsaksakul on 2/13/26.
+//
+
+import Foundation
+
+struct AppStrings {
+    static let appName = "MeVibe"
+    // Scanner View
+    static let scannerFound = "Found 🎉"
+    static let points = "Points"
+    static let claimPoints = "Claim Points"
+    static let scanningStateTitle = "Scanning for:"
+    static let scanningStateHint = "Plants • Books • Coffee"
+    static let lastDetectedObject = "Scanning..."
+}

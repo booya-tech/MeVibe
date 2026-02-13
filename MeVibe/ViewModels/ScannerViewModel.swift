@@ -9,10 +9,12 @@ import AVFoundation
 import Combine
 
 class ScannerViewModel: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
-    @Published var lastDetectedObject: String = "Scanning..."
+    @Published var lastDetectedObject: String = AppStrings.lastDetectedObject
     @Published var session = AVCaptureSession()
     @Published var foundValuableObject: ValuableObject? = nil
     @Published var isScanning: Bool = true
+    
+    var dataManager: DataManager?
     
     private let visionService = VisionService()
     private let videoOutput = AVCaptureVideoDataOutput()
@@ -57,10 +59,17 @@ class ScannerViewModel: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
         }
     }
     
+    func claimPoints() {
+        guard let valuable = foundValuableObject else { return }
+        dataManager?.addPoints(valuable.points, for: valuable.name)
+        
+        resetScan()
+    }
+    
     func resetScan() {
         foundValuableObject = nil
         isScanning = true
-        lastDetectedObject = "Scanning..."
+        lastDetectedObject = AppStrings.lastDetectedObject
     }
 }
 

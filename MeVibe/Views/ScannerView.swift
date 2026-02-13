@@ -5,9 +5,12 @@
 //  Created by Panachai Sulsaksakul on 2/10/26.
 //
 import SwiftUI
+import SwiftData
 
 struct ScannerView: View {
     @StateObject private var viewModel = ScannerViewModel()
+    @Environment(\.modelContext) private var modelContext
+    @State private var dataManager: DataManager?
 
     var body: some View {
         ZStack {
@@ -17,19 +20,30 @@ struct ScannerView: View {
 
             // Overlay UI
             VStack {
-                Text("My Vibe")
-                    .font(.largeTitle.bold())
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color.black.opacity(0.5))
-                    .cornerRadius(10)
-
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(AppStrings.appName)
+                            .font(.title2.bold())
+                            .foregroundColor(.white)
+                        
+                        Text("\(dataManager?.totalPoints ?? 0) \(AppStrings.points)")
+                            .font(.headline)
+                            .foregroundStyle(.yellow)
+                    }
+                    
+                    Spacer()
+                }
+                .padding()
+                .background(Color.black.opacity(0.5))
+                .cornerRadius(10)
+                .padding()
+                
                 Spacer()
                 
                 if let valuable = viewModel.foundValuableObject {
                     VStack(spacing: 15) {
                         // Found
-                        Text("Found 🎉")
+                        Text(AppStrings.scannerFound)
                             .font(.title2.bold())
                             .foregroundStyle(Color.white)
                         // Item Name
@@ -38,10 +52,9 @@ struct ScannerView: View {
                             .foregroundStyle(Color.white)
                         // Claim Point
                         Button {
-                            //TODO: - Save to Database
-                            viewModel.resetScan()
+                            viewModel.claimPoints()
                         } label: {
-                            Text("Claim Points")
+                            Text(AppStrings.claimPoints)
                                 .font(.headline)
                                 .foregroundStyle(Color.yellow)
                                 .padding()
@@ -58,11 +71,11 @@ struct ScannerView: View {
                     // Scanning State
                     VStack(spacing: 15) {
                         // Scanning for
-                        Text("Scanning for:")
+                        Text(AppStrings.scanningStateTitle)
                             .font(.caption)
                             .foregroundStyle(.white)
                         // Hint
-                        Text("Plants • Books • Coffee")
+                        Text(AppStrings.scanningStateHint)
                             .font(.headline)
                             .foregroundStyle(.white.opacity(0.8))
                         // Last Object Detecting
@@ -75,6 +88,12 @@ struct ScannerView: View {
                     .background(RoundedRectangle(cornerRadius: 20).fill(.ultraThinMaterial))
                     .padding(.bottom, 50)
                 }
+            }
+        }
+        .onAppear {
+            if dataManager == nil {
+                dataManager = DataManager(modelContext: modelContext)
+                viewModel.dataManager = dataManager
             }
         }
     }
