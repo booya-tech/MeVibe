@@ -32,6 +32,14 @@ class DataManager: ObservableObject {
         currentUser?.scanHistory.sorted { $0.scannedAt > $1.scannedAt } ?? []
     }
     
+    // Get all purchased items
+    var purchasedItems: [ShopItem] {
+        guard let user = currentUser else { return [] }
+        return user.purchasedItemIds.compactMap { id in
+            ShopCatalog.item(withId: id)
+        }
+    }
+    
     //MARK: - Methods
     func loadOrCreateUser() {
         let descriptor = FetchDescriptor<User>()
@@ -71,5 +79,39 @@ class DataManager: ObservableObject {
         } catch {
             print("Failed to save: \(error)")
         }
+    }
+    
+    // Purchase an item
+    func purchaseItem(_ item: ShopItem) -> Bool {
+        guard let user = currentUser else { return false }
+        
+        // Validation
+        guard !user.hasPurchased(itemId: item.id) else {
+            print("Already purchased")
+            return false
+        }
+        
+        guard user.canAfford(price: item.price) else {
+            print("Insufficient points")
+            return false
+        }
+        
+        // Process purchase
+        user.totalPoints -= item.price
+        user.purchasedItemIds.append(item.id)
+        
+        // Save
+        do {
+            try modelContext.save()
+            return true
+        } catch {
+            print("Failed to save purchase: \(error)")
+            return false
+        }
+    }
+    
+    // Check if item is purchased
+    func isPurchased(itemId: String) -> Bool {
+        currentUser?.hasPurchased(itemId: itemId) ?? false
     }
 }
