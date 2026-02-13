@@ -12,6 +12,7 @@ import SwiftData
 class User {
     var totalPoints: Int
     var createdAt: Date
+    var purchasedItemIds: [String] = [] // Track owned items
     
     // Relationship: One user has many scan records
     @Relationship(deleteRule: .cascade)
@@ -20,5 +21,14 @@ class User {
     init(totalPoints: Int = 0) {
         self.totalPoints = totalPoints
         self.createdAt = Date()
+    }
+    
+    // Helper methods
+    func hasPurchased(itemId: String) -> Bool {
+        purchasedItemIds.contains(itemId)
+    }
+    
+    func canAfford(price: Int) -> Bool {
+        totalPoints >= price
     }
 }
