@@ -9,9 +9,8 @@ import SwiftData
 
 struct ScannerView: View {
     @StateObject private var viewModel = ScannerViewModel()
-    @Environment(\.modelContext) private var modelContext
-    @State private var dataManager: DataManager?
-
+    @ObservedObject var dataManager: DataManager
+    
     var body: some View {
         ZStack {
             // Full screen camera
@@ -20,15 +19,16 @@ struct ScannerView: View {
 
             // Overlay UI
             VStack {
+                // Header with points display
                 HStack {
                     VStack(alignment: .leading) {
                         Text(AppStrings.appName)
                             .font(.title2.bold())
                             .foregroundColor(.white)
                         
-                        Text("\(dataManager?.totalPoints ?? 0) \(AppStrings.points)")
+                        Text("\(dataManager.totalPoints) \(AppStrings.points)")
                             .font(.headline)
-                            .foregroundStyle(.yellow)
+                            .foregroundColor(.yellow)
                     }
                     
                     Spacer()
@@ -37,51 +37,55 @@ struct ScannerView: View {
                 .background(Color.black.opacity(0.5))
                 .cornerRadius(10)
                 .padding()
-                
+
                 Spacer()
-                
+
+                // Detection Display
                 if let valuable = viewModel.foundValuableObject {
+                    // SUCCESS STATE
                     VStack(spacing: 15) {
-                        // Found
                         Text(AppStrings.scannerFound)
-                            .font(.title2.bold())
-                            .foregroundStyle(Color.white)
-                        // Item Name
+                            .font(.title3.bold())
+                            .foregroundColor(.green)
+                        
                         Text(valuable.name)
-                            .font(.title3)
-                            .foregroundStyle(Color.white)
-                        // Claim Point
-                        Button {
+                            .font(.system(size: 40, weight: .bold))
+                            .foregroundColor(.white)
+                        
+                        Text("+\(valuable.points) \(AppStrings.points)")
+                            .font(.title2)
+                            .foregroundColor(.yellow)
+                        
+                        Button(action: {
                             viewModel.claimPoints()
-                        } label: {
+                        }) {
                             Text(AppStrings.claimPoints)
                                 .font(.headline)
-                                .foregroundStyle(Color.yellow)
+                                .foregroundColor(.white)
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(Color.black)
+                                .background(Color.green)
                                 .cornerRadius(15)
                         }
                     }
                     .padding(30)
-                    .background(RoundedRectangle(cornerRadius: 20).fill(.ultraThickMaterial))
+                    .background(RoundedRectangle(cornerRadius: 20).fill(.ultraThinMaterial))
                     .padding(.horizontal)
                     .padding(.bottom, 50)
                 } else {
-                    // Scanning State
-                    VStack(spacing: 15) {
-                        // Scanning for
+                    // SCANNING STATE
+                    VStack(spacing: 10) {
                         Text(AppStrings.scanningStateTitle)
                             .font(.caption)
-                            .foregroundStyle(.white)
-                        // Hint
+                            .foregroundColor(.gray)
+                        
                         Text(AppStrings.scanningStateHint)
-                            .font(.headline)
-                            .foregroundStyle(.white.opacity(0.8))
-                        // Last Object Detecting
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.8))
+                        
                         Text(viewModel.lastDetectedObject.capitalized)
                             .font(.title2.bold())
-                            .foregroundStyle(Color.blue)
+                            .foregroundColor(.green)
                             .padding(.top, 5)
                     }
                     .padding()
@@ -91,14 +95,7 @@ struct ScannerView: View {
             }
         }
         .onAppear {
-            if dataManager == nil {
-                dataManager = DataManager(modelContext: modelContext)
-                viewModel.dataManager = dataManager
-            }
+            viewModel.dataManager = dataManager
         }
     }
-}
-
-#Preview {
-    ScannerView()
 }

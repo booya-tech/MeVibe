@@ -12,7 +12,7 @@ import SwiftData
 struct MeVibeApp: App {
     var body: some Scene {
         WindowGroup {
-            ScannerView()
+            MainTabView()
         }
         .modelContainer(for: [
             User.self,
