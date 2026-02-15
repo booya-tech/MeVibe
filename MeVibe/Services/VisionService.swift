@@ -8,6 +8,11 @@
 import Vision
 import CoreML
 
+struct DetectionResult {
+    let label: String
+    let confidence: Float
+}
+
 class VisionService {
     private var model: VNCoreMLModel?
 
@@ -18,16 +23,22 @@ class VisionService {
         }
     }
 
-    func classify(imageBuffer: CVImageBuffer, completion: @escaping (String?) -> Void) {
+    func classify(imageBuffer: CVImageBuffer, completion: @escaping (DetectionResult?) -> Void) {
         guard let model = model else { return }
 
         let request = VNCoreMLRequest(model: model) { request, error in
-            guard let results = request.results as? [VNClassificationObservation] else {
+            guard let results = request.results as? [VNClassificationObservation],
+                  let topResult = results.first else {
                 completion(nil)
                 return
             }
-            // Return the label with the highest confidence
-            completion(results.first?.identifier)
+            
+            // Return both label and confidence
+            let result = DetectionResult(
+                label: topResult.identifier,
+                confidence: topResult.confidence
+            )
+            completion(result)
         }
 
         request.imageCropAndScaleOption = .centerCrop
